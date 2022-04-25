@@ -6,6 +6,7 @@ const app = express();
 app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
+const NOT_FOUND_STATUS = 404;
 const PORT = '3000';
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -25,6 +26,14 @@ const readtalker = () => {
 
 app.get('/talker', async (_req, res) => {
   const talker = await readtalker();
-  if (talker.length < 1) return res.status(200).json([]);
-  return res.status(200).json(talker);
+  if (talker.length < 1) return res.status(HTTP_OK_STATUS).json([]);
+  return res.status(HTTP_OK_STATUS).json(talker);
+});
+
+app.get('/talker/:id', async (req, res) => {
+  const { id } = req.params;
+  const talker = await readtalker();
+  const filterId = talker.find((e) => Number(e.id) === Number(id));
+  if (filterId) return res.status(HTTP_OK_STATUS).json(filterId);
+return res.status(NOT_FOUND_STATUS).json({ message: 'Pessoa palestrante não encontrada' });
 });
