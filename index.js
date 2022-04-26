@@ -49,7 +49,6 @@ app.post('/login', verifyEmail, verifyPassword, (req, res) => {
 
 app.post('/talker', validtoken, 
 verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
-  // const talker = await readtalker();
   const vet = [];
   const { name, age, talk } = req.body;
   const { watchedAt, rate } = talk;
@@ -63,8 +62,27 @@ verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
     },
   };
   vet.push(obj);
-  
   fs.writeFile('./talker.json', JSON.stringify(vet));
-
   return res.status(201).json(obj);
+});
+
+app.put('/talker/:id', validtoken, 
+verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
+  const vet = [];
+  const { name, age, talk } = req.body;
+  const data = req.params;
+  const id = Number(data.id);
+  const { watchedAt, rate } = talk;
+  const obj = {
+    age,
+    id,
+    name,
+    talk: {
+      rate,
+      watchedAt,
+    },
+  };
+  vet.push(obj);
+  fs.writeFile('./talker.json', JSON.stringify(vet));
+  return res.status(200).json(obj);
 });
