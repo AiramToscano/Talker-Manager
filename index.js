@@ -86,3 +86,12 @@ verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
   fs.writeFile('./talker.json', JSON.stringify(vet));
   return res.status(200).json(obj);
 });
+
+app.delete('/talker/:id', validtoken, async (req, res) => {
+  const data = req.params;
+  const people = await readtalker();
+  const id = Number(data.id);
+ const filterId = people.filter((e) => e.id !== id);
+  fs.writeFile('./talker.json', JSON.stringify(filterId));
+  return res.status(204).end();
+});
