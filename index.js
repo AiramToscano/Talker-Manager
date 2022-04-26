@@ -27,6 +27,13 @@ const readtalker = () => {
   .then((data) => JSON.parse(data));
   return arquive;
 };
+app.get('/talker/search', validtoken, async (req, res) => {
+  const { q } = req.query;
+  const talker = await readtalker();
+  if (q === undefined) return res.status(200).json(talker);
+  const filtername = talker.filter((e) => e.name.includes(q));
+  return res.status(200).json(filtername);
+});
 
 app.get('/talker', async (_req, res) => {
   const talker = await readtalker();
@@ -42,27 +49,29 @@ app.get('/talker/:id', async (req, res) => {
 return res.status(NOT_FOUND_STATUS).json({ message: 'Pessoa palestrante não encontrada' });
 });
 
-app.post('/login', verifyEmail, verifyPassword, (req, res) => {
+app.post('/login', verifyEmail, verifyPassword, (_req, res) => {
   const tokenValid = geraStringAleatoria();
   res.status(200).json({ token: tokenValid });
 });
 
 app.post('/talker', validtoken, 
-verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
-  const vet = [];
-  const { name, age, talk } = req.body;
+verifyUsername, validAge, validtalkwatch, validtalkRate, async (req, res) => {
+  const data = req.body;
+  const talker = await readtalker();
+  const id = talker.length + 1;
+  const { name, age, talk } = data;
   const { watchedAt, rate } = talk;
   const obj = {
     age,
-    id: 5,
     name,
+    id,
     talk: {
       rate,
       watchedAt,
     },
   };
-  vet.push(obj);
-  fs.writeFile('./talker.json', JSON.stringify(vet));
+  talker.push(obj);
+  fs.writeFile('./talker.json', JSON.stringify(talker));
   return res.status(201).json(obj);
 });
 
