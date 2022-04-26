@@ -1,7 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs/promises');
-const joi = require('joi');
+const { validtoken, verifyUsername, 
+   validtalkwatch, validAge, validtalkRate } = require('./middlewares/talkermiddleware');
+const { verifyEmail, 
+  verifyPassword, geraStringAleatoria } = require('./middlewares/loginmiddleware');
 
 const app = express();
 app.use(bodyParser.json());
@@ -39,45 +42,29 @@ app.get('/talker/:id', async (req, res) => {
 return res.status(NOT_FOUND_STATUS).json({ message: 'Pessoa palestrante não encontrada' });
 });
 
-const verifyEmail = (req, res, next) => {
-  const { email } = req.body;
- if (email === undefined) {
- return res.status(400).json({ message: 'O campo "email" é obrigatório' });
- }
-  const EMAILSCHEMA = joi.object({
-    emailverifc: joi.string()
-    .required().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }) });
- const teste = EMAILSCHEMA.validate({ emailverifc: email });
- const { error } = teste;
-  if (error) {
-    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
-  }
-  next();
-};
+app.post('/login', verifyEmail, verifyPassword, (req, res) => {
+  const tokenValid = geraStringAleatoria();
+  res.status(200).json({ token: tokenValid });
+});
 
-const verifyPassword = (req, res, next) => {
-  const { password } = req.body;
-  if (password === undefined) {
-  return res.status(400).json({ message: 'O campo "password" é obrigatório' });
-  }
-  const EMAILSCHEMA = joi.object({
-    passwordverif: joi.string().required().pattern(new RegExp('^[1-9]{6,20}$')),
-  });
- const teste = EMAILSCHEMA.validate({ passwordverif: password });
- const { error } = teste;
-  if (error) {
-     return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
-  }
-  next();
-};
-function geraStringAleatoria(_req, res, _next) {
-  let stringAleatoria = '';
-  // https://www.webtutorial.com.br/funcao-para-gerar-uma-string-aleatoria-random-com-caracteres-especificos-em-javascript/#:~:text=A%20fun%C3%A7%C3%A3o%20Math.,baixo%20(com%20a%20fun%C3%A7%C3%A3o%20Math.
-  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 16; i += 1) {
-      stringAleatoria += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
-  }
-  return res.status(200).json({ token: stringAleatoria });
-}
+app.post('/talker', validtoken, 
+verifyUsername, validAge, validtalkwatch, validtalkRate, (req, res) => {
+  // const talker = await readtalker();
+  const vet = [];
+  const { name, age, talk } = req.body;
+  const { watchedAt, rate } = talk;
+  const obj = {
+    age,
+    id: 5,
+    name,
+    talk: {
+      rate,
+      watchedAt,
+    },
+  };
+  vet.push(obj);
+  
+  fs.writeFile('./talker.json', JSON.stringify(vet));
 
-app.post('/login', verifyEmail, verifyPassword, geraStringAleatoria);
+  return res.status(201).json(obj);
+});
