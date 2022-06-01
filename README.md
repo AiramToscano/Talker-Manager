@@ -20,3 +20,4 @@ Neste projeto, Foi desenvolvido:
 - Entender a estrutura de uma aplicação Express e como organizar seu código;
 - Criar rotas e aplicar middlewares.
 ---
+Obs: Alguns testes para a validação do projeto foram implementados pelos especialistas da Trybe.
